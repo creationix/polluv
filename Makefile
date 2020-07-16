@@ -1,32 +1,14 @@
 
 # These work!
-CC = clang
-# CC = gcc
+# CC = clang
+CC = gcc -g
 # CC = musl-gcc -static
 
 
 # These do not work...
-# CC = ${HOME}/zig-linux-x86_64-0.6.0+6b103324d/zig cc -target native-native-musl
-# CC = ${HOME}/zig-linux-x86_64-0.6.0+6b103324d/zig cc -target x86_64-linux-gnu.2.12
-# CC = ${HOME}/zig-linux-x86_64-0.6.0+6b103324d/zig cc
-
-# They all error with:
-#
-#     Compile C Objects [36/36] random-sysctl-linux.c...lld: error: undefined symbol: fcntl64
-#     >>> referenced by core.c
-#     >>>               zig-cache/o/nlb2OM8TPsUQIc_XQNmBz4fpS42PjAahZoSzC1KjNaTwF59ur_l8CNhDPZ9IcATL/core.o:(uv__nonblock_fcntl)
-#     >>> referenced by core.c
-#     >>>               zig-cache/o/nlb2OM8TPsUQIc_XQNmBz4fpS42PjAahZoSzC1KjNaTwF59ur_l8CNhDPZ9IcATL/core.o:(uv__nonblock_fcntl)
-#     >>> referenced by core.c
-#     >>>               zig-cache/o/nlb2OM8TPsUQIc_XQNmBz4fpS42PjAahZoSzC1KjNaTwF59ur_l8CNhDPZ9IcATL/core.o:(uv__cloexec_fcntl)
-#     >>> referenced by core.c
-#     >>>               zig-cache/o/nlb2OM8TPsUQIc_XQNmBz4fpS42PjAahZoSzC1KjNaTwF59ur_l8CNhDPZ9IcATL/core.o:(uv__cloexec_fcntl)
-#     >>> referenced by pipe.c
-#     >>>               zig-cache/o/jhXTjrrhm43hVXUukCHp92dWEIPwB8xZIJSLCh9zpAC-De0Q4JDPpIOMbVI38yqD/pipe.o:(uv_pipe_open)
-#     >>> referenced by process.c
-#     >>>               zig-cache/o/o436TuIX3xCh4SdlyVZMcnyNCMEYjh9ncu33riA1F0KCGXM-f7L_seyx3wnMPVci/process.o:(uv__process_child_init)
-#     >>> did you mean: fcntl64
-#     >>> defined in: /home/tim/.cache/zig/stage1/h/pVSItZEIxIXx_ZQQwt9SLNNbPH8xxZp1plbirUK6SOmyZ4FTf2EOP08onozfGP03/libc.so.6.0.0
+# CC = ${HOME}/zig-linux-x86_64-0.6.0+01ab167ce/zig cc -target native-native-musl
+# CC = ${HOME}/zig-linux-x86_64-0.6.0+01ab167ce/zig cc -target x86_64-linux-gnu.2.12
+# CC = ${HOME}/zig-linux-x86_64-0.6.0+01ab167ce/zig cc
 
 LIBUV_PATH := libuv
 
@@ -37,6 +19,7 @@ LIBUV_CFLAGS := \
 	-D_GNU_SOURCE \
 	-D_POSIX_C_SOURCE=200112 \
 	-ldl -lrt \
+	-Wall -Werror \
 
 
 LIBUV_C_INCLUDES := \
@@ -83,3 +66,9 @@ LIBUV_SRC_FILES := \
 
 main: main.c $(addprefix ${LIBUV_PATH}/, ${LIBUV_SRC_FILES})
 	$(CC) -o $@ $^ -Ilibuv/include ${LIBUV_CFLAGS} $(addprefix -I, ${LIBUV_C_INCLUDES})
+
+test: main
+	valgrind ./main
+
+clean:
+	rm -rf zig-cache main
