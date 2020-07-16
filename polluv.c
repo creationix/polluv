@@ -37,7 +37,6 @@ void uv_event_push(uv_event_loop_t* l, uv_event_t evt) {
   uv_event_node_t* node = malloc(sizeof(uv_event_node_t));
   node->event = evt;
   node->next = NULL;
-  printf("push event %p %s\n", node, uv_event_type_name(node->event.type));
   if (l->last) {
     l->last->next = node;
   } else {
@@ -53,7 +52,6 @@ uv_event_t uv_event_shift(uv_event_loop_t* l) {
   memset(&evt, 0, sizeof(evt));
 
   uv_event_node_t* node = l->first;
-  printf("node %p type=%s\n", node, node ? uv_event_type_name(node->event.type) : "");
   if (!node)
     return evt;
 

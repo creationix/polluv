@@ -1,4 +1,4 @@
-/zig-cache
-/main
+/zig-cache/
 /obj/
+/test
 /libpolluv.so

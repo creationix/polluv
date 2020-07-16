@@ -68,7 +68,7 @@ LIBUV_SRC_FILES := \
 
 LIBUV_OBJ_FILES=$(join $(addprefix obj/libuv/, $(dir $(LIBUV_SRC_FILES))), $(notdir $(LIBUV_SRC_FILES:.c=.o)))
 
-all: test-ffi
+all: test-ffi test-leak
 
 obj/polluv.o: polluv.c polluv.h
 	mkdir -p $(dir $@)
@@ -81,14 +81,14 @@ obj/%.o: %.c
 libpolluv.so: obj/polluv.o ${LIBUV_OBJ_FILES}
 	$(CC) -fPIC -shared $^ -o $@
 
-main: main.c obj/polluv.o ${LIBUV_OBJ_FILES}
+test: test.c obj/polluv.o ${LIBUV_OBJ_FILES}
 	$(CC) $^ -o $@ ${LIBUV_LDFLAGS} ${LIBUV_CFLAGS}
 
-test-leak: main
-	valgrind ./main
+test-leak: test
+	valgrind ./test
 
 test-ffi: libpolluv.so
 	luajit test.lua
 
 clean:
-	rm -rf zig-cache libpolluv.so obj
+	rm -rf zig-cache libpolluv.so obj test
