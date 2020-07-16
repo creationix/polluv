@@ -1,11 +1,8 @@
-#ifndef MAIN_H
-#define MAIN_H
+#include "uv.h"
 
-// Use opaque pointers to all of libuv so we don't need to include it's headers.
-
-typedef struct uv_loop_s uv_loop_t;
-typedef struct uv_handle_s uv_handle_t;
-typedef struct uv_timer_s uv_timer_t;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////// POLLUV ////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 typedef enum uv_event_enum {
   UV_EVENT_NONE = 0,
@@ -42,5 +39,3 @@ void uv_event_push(uv_event_loop_t* l, uv_event_t evt);
 uv_event_t uv_event_shift(uv_event_loop_t* l);
 void uv_event_timer_cb(uv_timer_t* timer);
 void uv_event_close_cb(uv_handle_t* handle);
-
-#endif

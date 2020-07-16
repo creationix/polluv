@@ -18,9 +18,11 @@ LIBUV_CFLAGS := \
 	-D_FILE_OFFSET_BITS=64 \
 	-D_GNU_SOURCE \
 	-D_POSIX_C_SOURCE=200112 \
-	-ldl -lrt \
 	-Wall -Werror \
 
+LIBUV_LDFLAGS := \
+	-pthread \
+	-ldl -lrt \
 
 LIBUV_C_INCLUDES := \
 	$(LIBUV_PATH)/include \
@@ -64,14 +66,29 @@ LIBUV_SRC_FILES := \
 	src/unix/random-sysctl-linux.c \
 
 
-main: main.c $(addprefix ${LIBUV_PATH}/, ${LIBUV_SRC_FILES})
-	$(CC) -o $@ $^ -Ilibuv/include ${LIBUV_CFLAGS} $(addprefix -I, ${LIBUV_C_INCLUDES})
+LIBUV_OBJ_FILES=$(join $(addprefix obj/libuv/, $(dir $(LIBUV_SRC_FILES))), $(notdir $(LIBUV_SRC_FILES:.c=.o)))
+
+all: test-ffi
+
+obj/polluv.o: polluv.c polluv.h
+	mkdir -p $(dir $@)
+	$(CC) -fPIC -c $< -o $@ ${LIBUV_CFLAGS}
+
+obj/%.o: %.c
+	mkdir -p $(dir $@)
+	$(CC) -fPIC -c $< -o $@ $(addprefix -I, ${LIBUV_C_INCLUDES}) ${LIBUV_CFLAGS}
+
+libpolluv.so: obj/polluv.o ${LIBUV_OBJ_FILES}
+	$(CC) -fPIC -shared $^ -o $@
+
+main: main.c obj/polluv.o ${LIBUV_OBJ_FILES}
+	$(CC) $^ -o $@ ${LIBUV_LDFLAGS} ${LIBUV_CFLAGS}
 
 test-leak: main
 	valgrind ./main
 
-test-ffi: main
+test-ffi: libpolluv.so
 	luajit test.lua
 
 clean:
-	rm -rf zig-cache main
+	rm -rf zig-cache libpolluv.so obj
