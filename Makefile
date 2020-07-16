@@ -1,8 +1,8 @@
 
 # These work!
 # CC = clang
-CC = gcc -g
-# CC = musl-gcc -static
+# CC = gcc -g
+CC = musl-gcc -Os -static -Wl,--export-dynamic
 
 
 # These do not work...
@@ -67,8 +67,11 @@ LIBUV_SRC_FILES := \
 main: main.c $(addprefix ${LIBUV_PATH}/, ${LIBUV_SRC_FILES})
 	$(CC) -o $@ $^ -Ilibuv/include ${LIBUV_CFLAGS} $(addprefix -I, ${LIBUV_C_INCLUDES})
 
-test: main
+test-leak: main
 	valgrind ./main
+
+test-ffi: main
+	luajit test.lua
 
 clean:
 	rm -rf zig-cache main
