@@ -1,0 +1,3 @@
+BasedOnStyle: Chromium
+BreakConstructorInitializers: BeforeComma
+ColumnLimit: 120
