@@ -88,7 +88,7 @@ test-leak: test
 	valgrind ./test
 
 test-ffi: libpolluv.so
-	luajit test.lua
+	luvit test.lua
 
 clean:
 	rm -rf zig-cache libpolluv.so obj test

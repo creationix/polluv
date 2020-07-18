@@ -5,36 +5,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-uv_event_loop_t* uv_event_get(uv_loop_t* ptr) {
-  uv_event_loop_t* l = (uv_event_loop_t*)uv_loop_get_data(ptr);
+polluv_state_t* polluv_get(uv_loop_t* ptr) {
+  polluv_state_t* l = (polluv_state_t*)uv_loop_get_data(ptr);
   return l->loop == ptr ? l : NULL;
 }
 
-const char* uv_event_type_name(uv_event_enum_t type) {
+const char* polluv_type_name(polluv_type_t type) {
   switch (type) {
-    case UV_EVENT_NONE:
-      return "UV_EVENT_NONE";
-    case UV_EVENT_CLOSE_CB:
-      return "UV_EVENT_CLOSE_CB";
-    case UV_EVENT_TIMER_CB:
-      return "UV_EVENT_TIMER_CB";
+    case POLLUV_NONE:
+      return "NONE";
+    case POLLUV_CLOSE_CB:
+      return "CLOSE_CB";
+    case POLLUV_TIMER_CB:
+      return "TIMER_CB";
   }
   return NULL;
 }
 
-void uv_event_init(uv_event_loop_t* l, uv_loop_t* loop) {
+void polluv_init(polluv_state_t* l, uv_loop_t* loop) {
   uv_loop_set_data(loop, l);
   l->loop = loop;
   l->first = NULL;
   l->last = NULL;
 }
 
-void uv_event_close(uv_event_loop_t* l) {
+void polluv_close(polluv_state_t* l) {
   uv_loop_set_data(l->loop, NULL);
 }
 
-void uv_event_push(uv_event_loop_t* l, uv_event_t evt) {
-  uv_event_node_t* node = malloc(sizeof(uv_event_node_t));
+void polluv_push(polluv_state_t* l, polluv_event_t evt) {
+  polluv_node_t* node = malloc(sizeof(polluv_node_t));
   node->event = evt;
   node->next = NULL;
   if (l->last) {
@@ -44,14 +44,14 @@ void uv_event_push(uv_event_loop_t* l, uv_event_t evt) {
   }
 }
 
-uv_event_t uv_event_shift(uv_event_loop_t* l) {
+polluv_event_t polluv_shift(polluv_state_t* l) {
   if (!l->first)
     uv_run(l->loop, UV_RUN_ONCE);
 
-  uv_event_t evt;
+  polluv_event_t evt;
   memset(&evt, 0, sizeof(evt));
 
-  uv_event_node_t* node = l->first;
+  polluv_node_t* node = l->first;
   if (!node)
     return evt;
 
@@ -66,11 +66,10 @@ uv_event_t uv_event_shift(uv_event_loop_t* l) {
   return evt;
 }
 
-void uv_event_timer_cb(uv_timer_t* timer) {
-  uv_event_push(uv_event_get(uv_handle_get_loop((uv_handle_t*)timer)),
-                (uv_event_t){UV_EVENT_TIMER_CB, {.timer = timer}});
+void polluv_timer_cb(uv_timer_t* timer) {
+  polluv_push(polluv_get(uv_handle_get_loop((uv_handle_t*)timer)), (polluv_event_t){POLLUV_TIMER_CB, {.timer = timer}});
 }
 
-void uv_event_close_cb(uv_handle_t* handle) {
-  uv_event_push(uv_event_get(uv_handle_get_loop(handle)), (uv_event_t){UV_EVENT_CLOSE_CB, {.handle = handle}});
+void polluv_close_cb(uv_handle_t* handle) {
+  polluv_push(polluv_get(uv_handle_get_loop(handle)), (polluv_event_t){POLLUV_CLOSE_CB, {.handle = handle}});
 }
